@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import subprocess
 import os
 import sys
@@ -7,9 +5,9 @@ import sys
 # Mutation Generation 
 
 #path = input("Enter tool path: ")
-#projPath = input("Enter project path (For Ex: E:\\mutation\\dataset\\cucumber-reporting) -- ")
+projPath = input("Enter project path (For Ex: E:\\mutation\\dataset\\cucumber-reporting) -- ")
 
-projPath = "E:\\mutation\\dataset\\cucumber-reporting"
+#projPath = "E:\\mutation\\dataset\\cucumber-reporting"
 mutantPath = projPath[0:projPath.rfind("\\")]
 
 print ("*** MUTANT GENERATION STARTED **** ")
