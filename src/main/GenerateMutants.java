@@ -27,7 +27,11 @@ public class GenerateMutants {
 
 	public static void main(String ar[]) {
 		try {
-			
+			ProjectUtility.projPrefix = ar[0];
+			System.out.println(ProjectUtility.projPrefix);
+			ProjectUtility.mutantPrefix = ProjectUtility.projPrefix.substring(0,
+					ProjectUtility.projPrefix.replaceAll(" ", "").lastIndexOf("\\"));
+
 			ProjectUtility.cleanUp();
 			String className, funcName;
 			int statementNo;
@@ -37,22 +41,17 @@ public class GenerateMutants {
 
 			boolean isMutantCreated = false;
 			logger.debug("-------- MUTANT GENERATION TASK STARTED ------------ ");
+			int mutantCounter = 0;
 
 			for (int currentMutant = 1; currentMutant <= maxMutants; currentMutant++) {
 				isMutantCreated = false;
-				ProjectUtility.createCopy(currentMutant);
-
-				String currMutantPath = ProjectUtility.projPrefix + ProjectUtility.SEPARATOR + currentMutant;
-				logger.debug(">>>>>>> Mutant Number " + currentMutant + " ----- : " + currMutantPath);
-
 				for (String file : fileList) {
 					if (isMutantCreated) {
 						logger.debug("Ignoring File " + file);
 						break;
 					}
 
-					String currFilePath = currMutantPath + file;
-					logger.debug("Working on file: " + currFilePath);
+					String currFilePath = ProjectUtility.projPrefix + file;
 					File currFile = new File(currFilePath);
 					String data = FileUtils.readFileToString(currFile);
 
@@ -75,8 +74,8 @@ public class GenerateMutants {
 							currFunc = typeDec.getMethods()[i];
 							funcName = currFunc.getName().toString();
 							block = currFunc.getBody();
-							
-							if(block == null)
+
+							if (block == null)
 								continue;
 							@SuppressWarnings("unchecked")
 							List<Statement> stmtList = block.statements();
@@ -88,7 +87,8 @@ public class GenerateMutants {
 											+ statementNo + "*" + visitor.getClass().toString())) {
 										continue;
 									}
-									//logger.debug("Current visitor: "+visitor.getClass().getName());
+									// logger.debug("Current visitor:
+									// "+visitor.getClass().getName());
 									Statement currStmnt = stmtList.get(statementNo);
 									String oldStatement, newStatement;
 
@@ -100,26 +100,32 @@ public class GenerateMutants {
 										validateChange.add(file + "*" + className + "*" + funcName + "*" + statementNo
 												+ "*" + visitor.getClass().toString());
 										isMutantCreated = true;
+										ProjectUtility.createCopy(++mutantCounter);
+										String currMutantPath = ProjectUtility.mutantPrefix + "\\mutants\\"
+												+ ProjectUtility.projPrefix
+														.substring(ProjectUtility.projPrefix.lastIndexOf("\\") + 1)
+												+ ProjectUtility.SEPARATOR + mutantCounter;
+										logger.debug("Working on file: " + (currMutantPath + file));
 										logger.debug("Old Statement: " + oldStatement);
 										logger.debug("New Statement: " + newStatement);
+										logger.debug(">>>>>>> Created Mutant# " + mutantCounter + " ----- : "
+												+ currMutantPath);
+										File mFile = new File(currMutantPath + file);
+										TextEdit editedText = cunit.rewrite(currDoc, null);
+										editedText.apply(currDoc);
+
+										FileWriter updatedFile = new FileWriter(mFile, false);
+										updatedFile.write(currDoc.get());
+										updatedFile.close();
 									}
 								}
 							}
 						}
 					}
-					TextEdit editedText = cunit.rewrite(currDoc, null);
-					editedText.apply(currDoc);
-
-					FileWriter updatedFile = new FileWriter(currFile, false);
-					updatedFile.write(currDoc.get());
-					updatedFile.close();
 				}
 
 				if (!isMutantCreated) {
 					logger.debug("No changes identified for mutation");
-					ProjectUtility.deleteCopy(currentMutant);
-					logger.debug("Removed " + currMutantPath);
-					logger.debug("Mutant Generation completed for mutant No: " + currentMutant);
 					break;
 				}
 			}

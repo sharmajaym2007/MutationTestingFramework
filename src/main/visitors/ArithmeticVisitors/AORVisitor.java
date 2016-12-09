@@ -19,10 +19,10 @@ public abstract class AORVisitor extends ASTVisitor{
 		List<ASTVisitor> visitors = new ArrayList<ASTVisitor>();
 		
 		// Addition
-		//visitors.add(new AddToDivVisitor());
-		//visitors.add(new AddToModVisitor());
-		//visitors.add(new AddToModVisitor());
-		//visitors.add(new AddToSubVisitor());
+		visitors.add(new AddToDivVisitor());
+		visitors.add(new AddToModVisitor());
+		visitors.add(new AddToModVisitor());
+		visitors.add(new AddToSubVisitor());
 
 		// Division
 		visitors.add(new DivToAddVisitor());
